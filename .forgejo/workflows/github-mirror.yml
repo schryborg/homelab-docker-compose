@@ -25,6 +25,6 @@ jobs:
       - name: Mirror main
         uses: https://forgejo.schryborg.de/luke/github-mirror-action@v1
         with:
-          github-repository: ${{ vars.GITHUB_MIRROR_REPOSITORY }}
-          github-token: ${{ secrets.GITHUB_MIRROR_TOKEN }}
+          github-repository: ${{ vars.MIRROR_REPO }}
+          github-token: ${{ secrets.MIRROR_TOKEN }}
           branch: main
