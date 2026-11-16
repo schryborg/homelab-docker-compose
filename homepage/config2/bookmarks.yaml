@@ -1,0 +1,33 @@
+---
+# For configuration options and examples, please see:
+# https://gethomepage.dev/configs/bookmarks
+
+- Kommunikation:
+    - Outlook:
+        - abbr: O
+          href: https://outlook.com/
+    - Whatsapp:
+        - abbr: W
+          href: https://web.whatsapp.com
+
+- Tools:
+    - ChatGPT:
+        - abbr: GPT
+          href: https://chat.openai.com/
+
+- Shopping:
+    - Kleineinzeigen:
+        - abbr: K
+          href: https://kleinanzeigen.de/
+    - Amazon:
+        - abbr: A
+          href: https://amazon.de/
+    - Zalando:
+        - abbr: Z
+          href: https://zalando.de/
+
+
+- Entertainment:
+    - YouTube:
+        - abbr: YT
+          href: https://youtube.com/

@@ -1,0 +1,67 @@
+services:
+  redis:
+    image: redis:alpine
+    container_name: nextcloud-redis
+    restart: always
+
+  nextcloud:
+    image: nextcloud:35.0.2-apache
+    container_name: nextcloud
+    env_file:
+      - .env
+    environment:
+      - TRUSTED_PROXIES=192.168.50.0/24 172.18.0.0/24 127.0.0.1 194.13.80.223
+      - OVERWRITEHOST=${SUBDOMAIN}.${DOMAIN}
+      - OVERWRITECLIURL=https://${SUBDOMAIN}.${DOMAIN}
+      - OVERWRITEPROTOCOL=https
+      - POSTGRES_HOST=${POSTGRES_HOST}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - REDIS_HOST=redis
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_SECURE=${SMTP_SECURE}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_AUTHTYPE=${SMTP_AUTHTYPE}
+      - SMTP_NAME=${SMTP_NAME}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - MAIL_FROM_ADDRESS=${MAIL_FROM_ADDRESS}
+      - MAIL_DOMAIN=${MAIL_DOMAIN}
+    ports:
+      - 80:80
+    depends_on:
+      - redis
+    restart: unless-stopped
+    volumes:
+      - /opt/stacks-data/nextcloud/data:/var/www/html
+      - ./custom.config.php:/var/www/html/config/custom.config.php:ro
+
+  cron:
+    image: nextcloud:35.0.2-apache
+    container_name: nextcloud-cron
+    restart: unless-stopped
+    volumes:
+      - /opt/stacks-data/nextcloud/data:/var/www/html
+      - ./custom.config.php:/var/www/html/config/custom.config.php:ro
+      # NOTE: The `volumes` config of the `cron` and `app` containers must match
+    entrypoint: /cron.sh
+    depends_on:
+      - redis
+
+  eurooffice-document-server:
+    image: ghcr.io/euro-office/documentserver:v9.3.7
+    container_name: eurooffice-document-server
+    restart: always
+    env_file:
+      - .env
+    environment:
+      - ALLOW_PRIVATE_IP_ADDRESS=true
+      - JWT_ENABLED=true
+      - JWT_SECRET=${EUROOFFICE_JWT_SECRET}
+      - THEME=euro-office
+      - USE_UNAUTHORIZED_STORAGE=true
+    ports:
+      - 9982:80
+    volumes:
+      - /opt/stacks-data/nextcloud/euro-office/data:/var/lib/euro-office/data
+      - /opt/stacks-data/nextcloud/euro-office/logs:/var/lib/euro-office/logs

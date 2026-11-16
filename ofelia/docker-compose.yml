@@ -1,0 +1,8 @@
+services:
+  scheduler:
+    image: mcuadros/ofelia:0.3.22
+    container_name: ofelia
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./config.ini:/etc/ofelia/config.ini
+    restart: unless-stopped

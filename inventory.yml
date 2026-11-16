@@ -1,0 +1,7 @@
+hosts:
+  docker:
+    address: docker
+  docker2:
+    address: docker2
+  docker3:
+    address: docker3

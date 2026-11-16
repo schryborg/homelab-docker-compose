@@ -1,0 +1,7 @@
+services:
+  web:
+    image: bizzycolah/qrcode-generator:latest
+    container_name: qrcode-generator
+    ports:
+      - "8093:80"
+    restart: unless-stopped

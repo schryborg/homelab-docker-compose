@@ -1,0 +1,36 @@
+services:
+  homepage:
+    image: ghcr.io/gethomepage/homepage:v2.4.0
+    container_name: homepage
+    env_file:
+      - .env
+    environment:
+      PUID: 1001
+      PGID: 1001
+      HOMEPAGE_ALLOWED_HOSTS: ${HOMEPAGE_ALLOWED_HOSTS}
+    ports:
+      - 3001:3000
+    volumes:
+      - ./config:/app/config # Make sure your local config directory exists
+      - ./icons:/app/public/icons #custom icons
+      - /mnt/sdb1:/mnt/sdb1:ro #show free space in Homepage
+      - /var/run/docker.sock:/var/run/docker.sock:ro # optional, for docker integrations
+    restart: unless-stopped
+
+  homepage-hasi:
+    image: ghcr.io/gethomepage/homepage:v2.4.0
+    container_name: homepage-hasi
+    env_file:
+      - .env
+    environment:
+      PUID: 1001
+      PGID: 1001
+      HOMEPAGE_ALLOWED_HOSTS: ${HOMEPAGE_ALLOWED_HOSTS}
+    ports:
+      - 3002:3000
+    volumes:
+      - ./config2:/app/config # Make sure your local config directory exists
+      - ./icons:/app/public/icons #custom icons
+      - /mnt/sdb1:/mnt/sdb1:ro #show free space in Homepage
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    restart: unless-stopped

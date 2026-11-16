@@ -1,0 +1,6 @@
+services:
+  whoami:
+    image: traefik/whoami:v1.12.0
+    ports:
+      - 8765:80
+    restart: unless-stopped

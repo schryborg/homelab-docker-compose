@@ -1,0 +1,55 @@
+---
+# For configuration options and examples, please see:
+# https://gethomepage.dev/configs/services/
+
+- Services:
+    - Home Assistant:
+        icon: home-assistant.png
+        href: https://ha.schryborg.de
+    - Nextcloud:
+        icon: /icons/nextcloud-hasi.png
+        href: https://cloud.schryborg.de
+    - Mealie:
+        icon: mealie.png
+        href: https://mealie.schryborg.de
+    - Timetagger:
+        icon: /icons/timetagger.png
+        href: https://timetagger.schryborg.de
+    - Guest-Wifi:
+        icon: /icons/wifi.png
+        href: http://guest-wifi.schryborg.de
+    - SearXNG:
+        icon: searxng.png
+        href: https://search.schryborg.de
+
+- Media:
+    - Immich:
+        icon: immich.png
+        href: https://immich.schryborg.de
+    - Paperless:
+        icon: paperless.png
+        href: https://paperless.schryborg.de
+        widget:
+          type: paperlessngx
+          url: https://paperless.schryborg.de
+          key: {{HOMEPAGE_VAR_PAPERLESS_KEY}}
+    - Jellyfin:
+        icon: jellyfin.png
+        href: https://jellyfin.schryborg.de
+        widget:
+          type: jellyfin
+          url: https://jellyfin.schryborg.de
+          key: {{HOMEPAGE_VAR_JELLYFIN_KEY}}
+          enableBlocks: true # optional, defaults to false
+          enableNowPlaying: true # optional, defaults to true
+
+- Tools:
+    - PDF:
+        icon: stirling-pdf.png
+        href: https://pdf.schryborg.de
+    - QR Generator:
+        icon: /icons/qr.png
+        href: https://qr.schryborg.de
+    - METube:
+        icon: metube.png
+        href: https://metube.schryborg.de

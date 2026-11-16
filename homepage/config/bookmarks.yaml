@@ -1,0 +1,35 @@
+---
+# For configuration options and examples, please see:
+# https://gethomepage.dev/latest/configs/bookmarks
+
+- Social:
+    - Outlook:
+        - abbr: O
+          href: https://outlook.com/
+    - Whatsapp:
+        - abbr: W
+          href: https://web.whatsapp.com
+    - Telegram:
+        - abbr: T
+          href: https://web.telegram.org
+
+- Tools:
+    - ChatGPT:
+        - abbr: GPT
+          href: https://chat.openai.com/
+    - dipul:
+        - abbr: D
+          href: https://maptool-dipul.dfs.de/?language=de
+
+- Shopping:
+    - Kleineinzeigen:
+        - abbr: K
+          href: https://kleinanzeigen.de/
+    - Amazon:
+        - abbr: A
+          href: https://Amazon.de/
+
+- Entertainment:
+    - YouTube:
+        - abbr: YT
+          href: https://youtube.com/

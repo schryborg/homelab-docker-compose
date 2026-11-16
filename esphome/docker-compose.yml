@@ -1,0 +1,16 @@
+services:
+  esphome:
+    container_name: esphome
+    image: ghcr.io/esphome/esphome:2026.9.1
+    volumes:
+      - /opt/stacks-data/esphome/config:/config:rw
+      - /etc/localtime:/ect/localtime:ro
+    network_mode: host
+    restart: unless-stopped
+    environment:
+      - ESPHOME_DASHBOARD_COMPILER_PROCESS_LIMIT=1
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 2gb

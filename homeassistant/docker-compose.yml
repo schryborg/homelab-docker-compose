@@ -1,0 +1,46 @@
+services:
+  homeassistant:
+    image: ghcr.io/home-assistant/home-assistant:2026.9.4
+    container_name: homeassistant
+    environment:
+      - PUID=1001
+      - PGID=1001
+      - TZ=Europe/Berlin
+    volumes:
+      - /opt/stacks-data/homeassistant/config:/config
+      - /etc/localtime:/etc/localtime:ro
+      - /run/dbus:/run/dbus:ro
+    restart: unless-stopped
+    privileged: true
+    network_mode: host
+
+  mosquitto:
+    image: eclipse-mosquitto:2.0.22
+    container_name: mosquitto
+    restart: always
+    volumes:
+      - /opt/stacks-data/mosquitto/config:/mosquitto/config
+      - /opt/stacks-data/mosquitto/data:/mosquitto/data
+      - /opt/stacks-data/mosquitto/log:/mosquitto/log
+    ports:
+      - 1883:1883
+      - 9001:9001
+
+  zigbee2mqtt:
+    image: koenkk/zigbee2mqtt:2.14.2
+    container_name: zigbee2mqtt
+    restart: always
+    # group_add:
+    #   - dialout
+    user: 1001:1001
+    volumes:
+      - /opt/stacks-data/zigbee2mqtt/data:/app/data
+      - /run/udev:/run/udev:ro
+    # network_mode: host
+    ports:
+      - 8083:8080 # Frontend Port
+    environment:
+      - TZ=Europe/Berlin
+    # devices:
+    # Make sure this matched your adapter location
+    # - /dev/serial/by-id/usb-Texas_Instruments_TI_CC2531_USB_CDC___0X00124B0018ED3DDF-if00:/dev/ttyACM0

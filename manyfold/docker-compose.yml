@@ -1,0 +1,45 @@
+services:
+  redis:
+    image: redis:7
+    container_name: manyfold-redis
+    restart: unless-stopped
+
+  app:
+    image: ghcr.io/manyfold3d/manyfold:0.153.0
+    container_name: manyfold
+    ports:
+      - 8091:3214
+    volumes:
+      # Uncomment to add a filesystem volume for your model library (or multiple if
+      # you want multiple libraries), in the form <local_path>:<container_path>.
+      # The local path could be a folder that already contains models, in which case Manyfold
+      # will scan and import them, or it could be empty.
+      # The container path can be anything; you will need to enter it in the "new library" form.
+      - /opt/stacks-data/manyfold/models:/models
+    env_file:
+      - .env
+    environment:
+      DATABASE_ADAPTER: postgresql # mysql2 or sqlite3 are also supported
+      DATABASE_HOST: ${POSTGRES_HOST}
+      DATABASE_PORT: 5432 # only needed for non-standard ports
+      DATABASE_NAME: ${POSTGRES_DB} # or the path to the database file if using sqlite3
+      DATABASE_USER: ${POSTGRES_USER}
+      DATABASE_PASSWORD: ${POSTGRES_PASSWORD}
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE}
+      REDIS_URL: redis://redis:6379/1
+      PUID: 1000
+      PGID: 1000
+      # For details of other optional environment variables, including features such
+      # as multiuser mode, visit https://manyfold.app/sysadmin/configuration.html
+    restart: unless-stopped
+    depends_on:
+      - redis
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - SETUID
+      - SETGID

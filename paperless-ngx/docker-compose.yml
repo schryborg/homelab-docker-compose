@@ -1,0 +1,60 @@
+services:
+  broker:
+    container_name: paperless-broker
+    image: docker.io/valkey/valkey:9-alpine
+    restart: unless-stopped
+    volumes:
+      - paperless_redisdata:/data
+
+  webserver:
+    container_name: paperless-webserver
+    image: ghcr.io/paperless-ngx/paperless-ngx:2.20.15
+    restart: unless-stopped
+    depends_on:
+      - broker
+    ports:
+      - "8089:8000"
+    volumes:
+      # - ./data:/usr/src/paperless/data
+      - paperless-data:/usr/src/paperless/data
+      # - ./media:/usr/src/paperless/media
+      - paperless-media:/usr/src/paperless/media
+      # - ./export:/usr/src/paperless/export
+      - /mnt/backup/paperless/export:/usr/src/paperless/export
+      - /opt/stacks-data/paperless-ngx/consume:/usr/src/paperless/consume
+    env_file:
+      - .env
+    environment:
+      PAPERLESS_REDIS: redis://broker:6379
+      PAPERLESS_DBENGINE: ${PAPERLESS_DBENGINE}
+      PAPERLESS_DBHOST: ${PAPERLESS_DBHOST}
+      PAPERLESS_DBNAME: ${PAPERLESS_DBNAME}
+      PAPERLESS_DBPORT: ${PAPERLESS_DBPORT}
+      PAPERLESS_DBUSER: ${PAPERLESS_DBUSER}
+      PAPERLESS_DBPASS: ${PAPERLESS_DBPASS}
+      PAPERLESS_APPS: allauth.socialaccount.providers.openid_connect
+      PAPERLESS_SOCIALACCOUNT_PROVIDERS: >
+        {
+          "openid_connect": {
+            "APPS": [
+              {
+                "provider_id": "${OIDC_PROVIDER_ID}",
+                "name": "${OIDC_PROVIDER_NAME}",
+                "client_id": "${OIDC_CLIENT_ID}",
+                "secret": "${OIDC_SECRET}",
+                "settings": {
+                  "server_url": "${OIDC_SERVER_URL}"
+                }
+              }
+            ],
+            "OAUTH_PKCE_ENABLED": "True"
+          }
+        }
+      PAPERLESS_DISABLE_REGULAR_LOGIN: true
+
+volumes:
+  paperless-data:
+    external: true
+  paperless-media:
+    external: true
+  paperless_redisdata:

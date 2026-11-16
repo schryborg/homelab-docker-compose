@@ -1,0 +1,60 @@
+services:
+  vaultwarden:
+    container_name: vaultwarden
+    image: vaultwarden/server:1.37.4
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - /opt/stacks-data/vaultwarden/data/:/data/
+    ports:
+      - 8081:80
+    environment:
+      - DOMAIN=${DOMAIN}
+      - LOGIN_RATELIMIT_MAX_BURST=10
+      - LOGIN_RATELIMIT_SECONDS=60
+      - ADMIN_RATELIMIT_MAX_BURST=10
+      - ADMIN_RATELIMIT_SECONDS=60
+      - ADMIN_TOKEN=${ADMIN_TOKEN}
+      - SENDS_ALLOWED=true
+      - EMERGENCY_ACCESS_ALLOWED=true
+      - WEB_VAULT_ENABLED=true
+      - SIGNUPS_ALLOWED=true
+      - SIGNUPS_VERIFY=true
+      - SIGNUPS_VERIFY_RESEND_TIME=3600
+      - SIGNUPS_VERIFY_RESEND_LIMIT=5
+      # - SIGNUPS_DOMAINS_WHITELIST=yourdomainhere.com,anotherdomain.com
+      - SMTP_HOST=${MTP_HOST}
+      - SMTP_FROM=${SMTP_FROM}
+      - SMTP_FROM_NAME=${SMTP_FROM_NAME}
+      - SMTP_SECURITY=${SMTP_SECURITY}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USERNAME=${SMTP_USERNAME}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - SMTP_AUTH_MECHANISM=Login
+      - SSO_ENABLED=false
+      - SSO_AUTHORITY=${SSO_AUTHORITY}
+      - SSO_CLIENT_ID=${SSO_CLIENT_ID}
+      - SSO_CLIENT_SECRET=${SSO_CLIENT_SECRET}
+      - SSO_SCOPES=email profile offline_access
+      - SSO_ALLOW_UNKNOWN_EMAIL_VERIFICATION=false
+      - SSO_CLIENT_CACHE_EXPIRATION=0
+      - SSO_ONLY=false # Set to true to disable email+master password login and require SSO
+      - SSO_SIGNUPS_MATCH_EMAIL=true # Match first SSO login to existing account by
+
+  vaultwarden-backup:
+    image: bruceforce/vaultwarden-backup:2.1.6
+    container_name: vaultwarden-backup
+    restart: unless-stopped
+    init: true
+    depends_on:
+      - vaultwarden
+    volumes:
+      - /opt/stacks-data/vaultwarden/data:/data/
+      - /mnt/backup/vaultwarden:/backup/
+    environment:
+      - TZ=Europe/Berlin
+      - UID=1000
+      - DELETE_AFTER=28
+      - TIMESTAMP=true
+      - BACKUP_ON_STARTUP=true
