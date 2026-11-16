@@ -1,0 +1,114 @@
+name: Deploy all stacks
+on:
+  push:
+    branches: [main]
+    paths:
+      - "*/**"
+  workflow_dispatch:
+    inputs:
+      stack:
+        description: "Stack to deploy ('all' deploys everything, comma-separated for multiple)"
+        required: true
+        default: "all"
+        type: string
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Determine stacks to deploy
+        id: set-matrix
+        env:
+          STACK_INPUT: ${{ github.event.inputs.stack }}
+          BEFORE_SHA: ${{ github.event.before }}
+        run: |
+          set -euo pipefail
+
+          if [ -n "${STACK_INPUT:-}" ] && [ "$STACK_INPUT" != "all" ]; then
+            # Manual dispatch: allow comma-separated stack names
+            stacks=$(echo "$STACK_INPUT" | tr ',' '\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | sort -u)
+          elif [ -n "${STACK_INPUT:-}" ] && [ "$STACK_INPUT" = "all" ]; then
+            stacks=$(ls -d */ | cut -d/ -f1 | sort -u)
+          elif [ "$GITHUB_EVENT_NAME" = "push" ]; then
+            changed=$(git diff --name-only "$BEFORE_SHA" "$GITHUB_SHA" -- '*/**' 2>/dev/null \
+                      || git diff --name-only HEAD^ HEAD -- '*/**')
+            changed=$(echo "$changed" | cut -d/ -f1 | sort -u)
+            stacks=""
+            for s in $changed; do
+              if [ -f "$s/host.yml" ]; then
+                stacks="$stacks $s"
+              else
+                echo "Skipping '$s' (stack no longer exists)"
+              fi
+            done
+          else
+            stacks=""
+          fi
+
+          include=""
+          for stack in $stacks; do
+            [ -z "$stack" ] && continue
+            if [ ! -f "$stack/host.yml" ]; then
+              echo "Error: unknown stack '$stack'. Available stacks:"
+              ls -d */
+              exit 1
+            fi
+            include="$include{\"stack\":\"$stack\"},"
+          done
+          include="${include%,}"
+
+          matrix="{\"include\":[$include]}"
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
+          echo "Stacks to deploy:$stacks"
+
+  deploy:
+    needs: changes
+    if: needs.changes.outputs.matrix != '{"include":[]}'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.changes.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install rsync
+        run: sudo apt update && sudo apt install -y rsync
+
+      - name: Set up SSH
+        uses: ./.forgejo/actions/setup-ssh
+        with:
+          ssh-key: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
+
+      - name: Deploy stack
+        env:
+          STACK: ${{ matrix.stack }}
+        run: |
+          set -euo pipefail
+
+          target=$(yq '.target' "$STACK/host.yml")
+          address=$(yq ".hosts.$target.address" inventory.yml)
+          path="/opt/stacks/$STACK"
+
+          echo "Deploying $STACK to $target ($address) at $path"
+
+          rsync -az -e "ssh -i ~/.ssh/deploy_key" \
+            --exclude '.env' "$STACK/" "deploy@$address:$path/"
+
+          # Export secrets for stacks that reference them (${...} or env_file),
+          # ignoring full-line comments
+          if grep -v '^\s*#' "$STACK/docker-compose.yml" | grep -qE '\$\{|env_file'; then
+            echo "Stack references secrets, exporting .env from Infisical"
+            # rm first: never leave a stale .env behind. If the export fails,
+            # its exit code aborts the deploy before compose runs.
+            ssh -i ~/.ssh/deploy_key "deploy@$address" \
+              "cd $path && rm -f .env && umask 077 && infisical export --env=prod --path=/$STACK --projectId=${{ vars.INFISICAL_PROJECTID }} --output-file=.env"
+          fi
+
+          ssh -i ~/.ssh/deploy_key "deploy@$address" \
+            "cd $path && docker compose pull && docker compose down && docker compose up -d"

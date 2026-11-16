@@ -1,0 +1,39 @@
+name: Set up SSH for deploy user
+description: |
+  Install the deploy SSH private key and populate known_hosts from docker-compose/inventory.yml.
+  This action must run after actions/checkout so that docker-compose/inventory.yml is available.
+
+inputs:
+  ssh-key:
+    description: SSH private key for the deploy user
+    required: true
+  inventory-file:
+    description: Path to the inventory YAML file
+    required: false
+    default: inventory.yml
+
+runs:
+  using: composite
+  steps:
+    - name: Set up SSH key
+      shell: bash
+      env:
+        SSH_KEY: ${{ inputs.ssh-key }}
+      run: |
+        set -euo pipefail
+        mkdir -p "$HOME/.ssh"
+        printf '%s\n' "$SSH_KEY" > "$HOME/.ssh/deploy_key"
+        chmod 600 "$HOME/.ssh/deploy_key"
+
+    - name: SSH keyscan
+      shell: bash
+      env:
+        INVENTORY_FILE: ${{ inputs.inventory-file }}
+      run: |
+        set -euo pipefail
+        mkdir -p "$HOME/.ssh"
+        hosts=$(yq '.hosts.[].address' "$INVENTORY_FILE")
+        for host in $hosts; do
+          echo "ssh-keyscan for host $host"
+          ssh-keyscan "$host" >> "$HOME/.ssh/known_hosts"
+        done
