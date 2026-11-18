@@ -49,7 +49,7 @@ services:
       - redis
 
   eurooffice-document-server:
-    image: ghcr.io/euro-office/documentserver:v9.3.7
+    image: ghcr.io/euro-office/documentserver:v9.3.8
     container_name: eurooffice-document-server
     restart: always
     env_file:
