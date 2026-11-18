@@ -15,7 +15,7 @@ services:
     network_mode: host
 
   mosquitto:
-    image: eclipse-mosquitto:2.0.22
+    image: eclipse-mosquitto:2.0.23
     container_name: mosquitto
     restart: always
     volumes:
