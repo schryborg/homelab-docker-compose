@@ -19,7 +19,7 @@ name: patchmon
 
 services:
   server:
-    image: ghcr.io/patchmon/patchmon-server:2.1.6
+    image: ghcr.io/patchmon/patchmon-server:2.1.8
     restart: unless-stopped
     env_file:
       - .env
