@@ -1,6 +1,6 @@
 services:
   scheduler:
-    image: mcuadros/ofelia:0.3.22
+    image: mcuadros/ofelia:0.3.23
     container_name: ofelia
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
