@@ -5,7 +5,7 @@ services:
     restart: always
 
   nextcloud:
-    image: nextcloud:35.0.2-apache
+    image: nextcloud:35.0.3-apache
     container_name: nextcloud
     env_file:
       - .env
@@ -37,7 +37,7 @@ services:
       - ./custom.config.php:/var/www/html/config/custom.config.php:ro
 
   cron:
-    image: nextcloud:35.0.2-apache
+    image: nextcloud:35.0.3-apache
     container_name: nextcloud-cron
     restart: unless-stopped
     volumes:
