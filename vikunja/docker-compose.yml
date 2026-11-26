@@ -1,6 +1,6 @@
 services:
   vikunja:
-    image: vikunja/vikunja:2.7.1
+    image: vikunja/vikunja:2.8.0
     container_name: vikunja
     ports:
       - 8090:3456
